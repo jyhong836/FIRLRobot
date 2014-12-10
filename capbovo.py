@@ -1,4 +1,9 @@
-#!/usr/bin/python2.7 
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# @Author: Junyuan Hong
+# @Date:   2014-12-09 19:19:28
+# @Last Modified by:   Junyuan Hong
+# @Last Modified time: 2014-12-10 13:48:57
 "This is the bovo screenshot module"
 import gtk.gdk as gdk
 import sys
@@ -6,7 +11,7 @@ import subprocess
 import re
 import numpy as np
 import time
-import random
+import robot
 # import Queue
 
 import mouse
@@ -19,7 +24,7 @@ class FIRLRobot(object):
         self.win_offset_x = 9
         self.win_offset_y = 48
         self.chess_gap = 9.8
-        self.chess_off = 5
+        self.chess_off = 6
         self.chessboard_sz = 22
 
         # init window
@@ -27,6 +32,7 @@ class FIRLRobot(object):
         if self.win==None:
             print 'can not find window:',self.xid
             return
+        self.win.set_keep_above(True) # keep the window always above
         sz = self.win.get_size()
         self.width = sz[0]-110-9
         self.height = sz[1]-80-8
@@ -48,19 +54,29 @@ class FIRLRobot(object):
         self.chessboards = np.zeros((self.queuelen, 22,22))
         self.chbptr = 0
 
+        # init mouse device
         self.mouse = mouse.mouse()
+
+        # init robot
+        self.rob  = robot.robot()
 
     def loop(self, max_steps = 10000, wait_time=1):
         '''loop for learning, wait \'wait_time\' length time every step'''
         step = 0
+        self.new_game()
         while True:
             cb = self.get_chessboard()
-            (x, y) = self.gowhere()
-            self.put_chess(x, y)
+            # pos = self.gowhere()
+            pos = self.rob.next_step(cb)
+            if pos==None:
+                self.new_game()
+            else:
+                (x, y) = pos
+                self.put_chess(x, y)
             step+=1
-            if step > max_steps:
-                break
             print "step",step,"...ok"
+            if step >= max_steps:
+                break
             time.sleep(1)
         print "loop end"
 
@@ -68,33 +84,30 @@ class FIRLRobot(object):
         if x <0 or y <0 or x >=self.chessboard_sz or y >= self.chessboard_sz:
             print "ERROR step, out of range (",x,",",y,")"
             return
-        print "click at",(x, y)
         (x, y) = (int(x*self.chess_gap)+self.chess_off + self.win_offset_x, int(y*self.chess_gap)+self.chess_off + self.win_offset_y)
         (self.win_x, self.win_y) = self.win.get_origin()
+        (x0, y0) = self.mouse.get_position()
         self.mouse.click(1, x + self.win_x, y + self.win_y)
-        print "click at",(x + self.win_x, y + self.win_y)
+        # self.mouse.moveto(x + self.win_x, y + self.win_y)
+        # self.win.set_events(gdk.ENTER_NOTIFY | gdk.BUTTON_PRESS | gdk.BUTTON_RELEASE)
+        self.mouse.moveto(x0, y0)
 
-    def gowhere(self):
-        x = 0
-        y = 0
-
-        notcorrect = True
-        while notcorrect:
-            x = random.randint(0, self.chessboard_sz-1)
-            y = random.randint(0, self.chessboard_sz-1)
-            if self.chessboards[self.chbptr, y, x]==0:
-                notcorrect = False
-
-        return (x, y)
+    def new_game(self):
+        print "* start a new game"
+        (self.win_x, self.win_y) = self.win.get_origin()
+        (x0, y0) = self.mouse.get_position()
+        self.mouse.click(1, 16 + self.win_offset_x + self.win_x, -23 + self.win_offset_y + self.win_y)
+        self.mouse.moveto(x0, y0)
+        print "click: ",(16 + self.win_offset_x, -23 + self.win_offset_y)
 
     def get_chessboard(self):#, ):
-        '''return the 22x22 chessboard, 1 is red part, 2 is green part, negative means game over'''
+        '''return the 22x22 chessboard, 1 is red part, 2 is green part, negative means game end'''
         # bovoXID = self.xid
         
-        # TEST CODE should be remove in future
+        # # TEST CODE should be remove in future
         # savefile='/home/jyhong/Pictures/capbovo.png'
         # saveformat="png"
-        # end TEST CODE
+        # # end TEST CODE
         
         self.pbuf = self.pbuf.get_from_drawable(self.win, self.win.get_colormap(),self.win_offset_x,self.win_offset_y,0,0,self.width, self.height)
         # width = int(width/2)
@@ -103,30 +116,33 @@ class FIRLRobot(object):
         self.pixnum = self.pbuf.get_pixels_array()
         # sz = pixnum.shape
         # chessboard = np.zeros((22,22))
+        self.chbptr = (self.chbptr + 1)%self.queuelen # move to new ptr firstly
         chessboard = self.chessboards[self.chbptr, :, :]
-        self.chbptr = (self.chbptr + 1)%self.queuelen
         for x in xrange(0,self.chessboard_sz):
             for y in xrange(0,self.chessboard_sz):
-                if self.pixnum[int(y*self.chess_gap)+self.chess_off, int(x*self.chess_gap)+self.chess_off, 0] == 255:
+                iy = int(y*self.chess_gap)+self.chess_off
+                ix = int(x*self.chess_gap)+self.chess_off
+                if self.pixnum[iy, ix, 0] > 0:
                     chessboard[y, x] = 1
-                elif self.pixnum[int(y*self.chess_gap)+self.chess_off, int(x*self.chess_gap)+self.chess_off, 1] ==255:
+                elif self.pixnum[iy, ix, 1] > 0:
                     chessboard[y, x] = 2
-                if self.pixnum[int(y*self.chess_gap)+self.chess_off, int(x*self.chess_gap)+self.chess_off, 1] ==215:
-                    chessboard[y, x] = -1
-                elif self.pixnum[int(y*self.chess_gap)+self.chess_off, int(x*self.chess_gap)+self.chess_off, 1] ==215:
-                    chessboard[y, x] = -2
-                # TEST CODE should be remove in future
-                # pixnum[int(y*self.chess_gap)+self.chess_off, int(x*self.chess_gap)+self.chess_off, :] = 255 
-                # end TEST CODE
+                else:
+                    chessboard[y, x] = 0
+                if self.pixnum[iy, ix, 2] > 0 :
+                    chessboard[y, x] = -chessboard[y, x]
+                # # TEST CODE should be remove in future
+                # if self.pixnum[iy, ix, 2]>0:print self.pixnum[iy, ix, :]
+                # self.pixnum[iy, ix, :] = 255 
+                # # end TEST CODE
         # print chessboard
-        # TEST CODE should be remove in future
+        # # TEST CODE should be remove in future
         # # save screenshot to file
         # if (self.pbuf != None):
         #     self.pbuf.save(savefile, saveformat)
         #     print "save file to", savefile
         # else:
         #     print "Unable to get the screenshot."
-        # end TEST CODE
+        # # end TEST CODE
         return chessboard
 
     def getBovoId(self):
@@ -149,4 +165,5 @@ class FIRLRobot(object):
 if __name__ == "__main__":
     rob = FIRLRobot()
     # rob.get_chessboard()
-    rob.loop(max_steps = 10)
+    arg = sys.argv
+    rob.loop(max_steps = 20)

@@ -1,5 +1,9 @@
-#!/usr/bin/python2.7
-#-*- coding: utf-8 -*-
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# @Author: Junyuan Hong
+# @Date:   2014-12-09 21:50:28
+# @Last Modified by:   Junyuan Hong
+# @Last Modified time: 2014-12-10 12:33:01
 
 # Reference to the code in 
 # http://blog.chinaunix.net/uid-52437-id-3068595.html
@@ -31,9 +35,13 @@ class mouse():
     def click(self, buttonKey, x, y):
         '''button: 1 left; 2 middle; 3 right; 4 middle up; 5 middle down'''
         xtest.fake_input(self.display, X.MotionNotify, x = x, y = y)
-        xtest.fake_input(self.display, X.ButtonPress, buttonKey)
-        xtest.fake_input(self.display, X.ButtonRelease, buttonKey)
         self.display.flush()
+        xtest.fake_input(self.display, X.ButtonPress, buttonKey)
+        self.display.sync()
+        xtest.fake_input(self.display, X.ButtonRelease, buttonKey)
+        self.display.sync()
+        # self.display.flush()
+        # print "click: ",(x,y)
 
     def moveto(self, x, y):
         '''move mouse to specific position(x,y)'''
