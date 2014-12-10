@@ -1,0 +1,29 @@
+* TODO list
+	- {{FEATURES (beta 1.0)}}
+	- {{ISSUE}}
+	- {{BUGS}}
+	- {{OTHERS}}
+	- {{AUTHOR}}
+	- {{LINK}}
+
+--- start ---
+* FEATURES (beta 1.0) [3/3]
+	- [X] Take screenshot of bovo
+	- [X] Auto read chessboard from the bovo screen shot
+	- [X] Robot go steps by estimating mouse
+	- [ ] Learn from the chessboard
+
+* ISSUE [0/1]
+	- [ ] HOW to learn, or which learning model should be applied?
+
+* BUGS
+
+* OTHERS [0/2]
+	- [ ] update README.md
+	- [ ] push to github
+
+* AUTHOR
+	- Jnyuan Hong [[mailto:jyhong836@gmail.com subject]]
+
+* LINK
+	{1} bovo development page [[https://www.kde.org/applications/games/bovo/development]]

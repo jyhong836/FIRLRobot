@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 16.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" id="图层_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 width="56.693px" height="85.039px" viewBox="0 0 56.693 85.039" enable-background="new 0 0 56.693 85.039" xml:space="preserve">
+<g id="win">
+	<rect x="0" y="14.173" fill="none" width="23.622" height="23.622"/>
+	<polygon fill="#0000FF" fill-opacity="0.4" points="4.724,22.441 8.267,18.898 11.811,18.898 15.354,18.898 18.897,22.441 18.897,25.985 
+		18.897,29.528 15.354,33.071 11.811,33.071 8.267,33.071 4.724,29.528 4.724,25.984 	"/>
+</g>
+<g id="last">
+	<rect x="0" y="14.173" fill="none" width="23.622" height="23.622"/>
+	<polygon fill="#0000FF" fill-opacity="0.0" points="4.724,22.441 8.267,18.898 11.811,18.898 15.354,18.898 18.897,22.441 
+		18.897,25.985 18.897,29.528 15.354,33.071 11.811,33.071 8.267,33.071 4.724,29.528 4.724,26.228 	"/>
+</g>
+<circle id="x1" fill="#00FF00" cx="4.724" cy="18.898" r="2.362"/>
+<circle id="x2" fill="#00FF00" cx="4.724" cy="18.898" r="2.362"/>
+<circle id="x3" fill="#00FF00" cx="4.724" cy="18.898" r="2.362"/>
+<circle id="x4" fill="#00FF00" cx="4.724" cy="18.898" r="2.362"/>
+<circle id="x5" fill="#00FF00" cx="4.724" cy="18.898" r="2.362"/>
+<circle id="o1" fill="#FF0000" cx="4.724" cy="23.622" r="2.362"/>
+<circle id="o2" fill="#FF0000" cx="4.724" cy="23.622" r="2.362"/>
+<circle id="o3" fill="#FF0000" cx="4.724" cy="23.622" r="2.362"/>
+<circle id="o4" fill="#FF0000" cx="4.724" cy="23.622" r="2.362"/>
+<circle id="o5" fill="#FF0000" cx="4.724" cy="23.622" r="2.362"/>
+<rect id="background" x="0" y="14.173" width="56.693" height="56.693"/>
+<g id="grid">
+	<rect x="2.362" y="16.535" fill="none" stroke="#32CD32" stroke-width="0.1" width="51.969" height="51.969"/>
+	<line fill="none" stroke="#32CD32" stroke-width="0.05" x1="2.362" y1="18.898" x2="54.331" y2="18.898"/>
+	<line fill="none" stroke="#32CD32" stroke-width="0.05" x1="2.362" y1="21.26" x2="54.331" y2="21.26"/>
+	<line fill="none" stroke="#32CD32" stroke-width="0.05" x1="2.362" y1="23.622" x2="54.331" y2="23.622"/>
+	<line fill="none" stroke="#32CD32" stroke-width="0.05" x1="2.362" y1="25.985" x2="54.331" y2="25.985"/>
+	<line fill="none" stroke="#32CD32" stroke-width="0.05" x1="2.362" y1="28.347" x2="54.331" y2="28.347"/>
+	<line fill="none" stroke="#32CD32" stroke-width="0.05" x1="2.362" y1="30.708" x2="54.331" y2="30.708"/>
+	<line fill="none" stroke="#32CD32" stroke-width="0.05" x1="2.362" y1="33.071" x2="54.331" y2="33.071"/>
+	<line fill="none" stroke="#32CD32" stroke-width="0.05" x1="2.362" y1="35.433" x2="54.331" y2="35.433"/>
+	<line fill="none" stroke="#32CD32" stroke-width="0.05" x1="2.362" y1="37.795" x2="54.331" y2="37.795"/>
+	<line fill="none" stroke="#32CD32" stroke-width="0.05" x1="2.362" y1="40.157" x2="54.331" y2="40.157"/>
+	<line fill="none" stroke="#32CD32" stroke-width="0.05" x1="2.362" y1="42.52" x2="54.331" y2="42.52"/>
+	<line fill="none" stroke="#32CD32" stroke-width="0.05" x1="2.362" y1="44.882" x2="54.331" y2="44.882"/>
+	<line fill="none" stroke="#32CD32" stroke-width="0.05" x1="2.362" y1="47.244" x2="54.331" y2="47.244"/>
+	<line fill="none" stroke="#32CD32" stroke-width="0.05" x1="2.362" y1="49.607" x2="54.331" y2="49.607"/>
+	<line fill="none" stroke="#32CD32" stroke-width="0.05" x1="2.362" y1="51.969" x2="54.331" y2="51.969"/>
+	<line fill="none" stroke="#32CD32" stroke-width="0.05" x1="2.362" y1="54.33" x2="54.331" y2="54.33"/>
+	<line fill="none" stroke="#32CD32" stroke-width="0.05" x1="2.362" y1="56.693" x2="54.331" y2="56.693"/>
+	<line fill="none" stroke="#32CD32" stroke-width="0.05" x1="2.362" y1="59.055" x2="54.331" y2="59.055"/>
+	<line fill="none" stroke="#32CD32" stroke-width="0.05" x1="2.362" y1="61.417" x2="54.331" y2="61.417"/>
+	<line fill="none" stroke="#32CD32" stroke-width="0.05" x1="2.362" y1="63.78" x2="54.331" y2="63.78"/>
+	<line fill="none" stroke="#32CD32" stroke-width="0.05" x1="2.362" y1="66.142" x2="54.331" y2="66.142"/>
+	<line fill="none" stroke="#32CD32" stroke-width="0.05" x1="4.724" y1="16.535" x2="4.724" y2="68.504"/>
+	<line fill="none" stroke="#32CD32" stroke-width="0.05" x1="7.087" y1="16.535" x2="7.087" y2="68.504"/>
+	<line fill="none" stroke="#32CD32" stroke-width="0.05" x1="9.449" y1="16.535" x2="9.449" y2="68.504"/>
+	<line fill="none" stroke="#32CD32" stroke-width="0.05" x1="11.811" y1="16.535" x2="11.811" y2="68.504"/>
+	<line fill="none" stroke="#32CD32" stroke-width="0.05" x1="14.174" y1="16.535" x2="14.174" y2="68.504"/>
+	<line fill="none" stroke="#32CD32" stroke-width="0.05" x1="16.536" y1="16.535" x2="16.536" y2="68.504"/>
+	<line fill="none" stroke="#32CD32" stroke-width="0.05" x1="18.897" y1="16.535" x2="18.897" y2="68.504"/>
+	<line fill="none" stroke="#32CD32" stroke-width="0.05" x1="21.26" y1="16.535" x2="21.26" y2="68.504"/>
+	<line fill="none" stroke="#32CD32" stroke-width="0.05" x1="23.622" y1="16.535" x2="23.622" y2="68.504"/>
+	<line fill="none" stroke="#32CD32" stroke-width="0.05" x1="25.984" y1="16.535" x2="25.984" y2="68.504"/>
+	<line fill="none" stroke="#32CD32" stroke-width="0.05" x1="28.346" y1="16.535" x2="28.346" y2="68.504"/>
+	<line fill="none" stroke="#32CD32" stroke-width="0.05" x1="30.709" y1="16.535" x2="30.709" y2="68.504"/>
+	<line fill="none" stroke="#32CD32" stroke-width="0.05" x1="33.071" y1="16.535" x2="33.071" y2="68.504"/>
+	<line fill="none" stroke="#32CD32" stroke-width="0.05" x1="35.433" y1="16.535" x2="35.433" y2="68.504"/>
+	<line fill="none" stroke="#32CD32" stroke-width="0.05" x1="37.796" y1="16.535" x2="37.796" y2="68.504"/>
+	<line fill="none" stroke="#32CD32" stroke-width="0.05" x1="40.158" y1="16.535" x2="40.158" y2="68.504"/>
+	<line fill="none" stroke="#32CD32" stroke-width="0.05" x1="42.519" y1="16.535" x2="42.519" y2="68.504"/>
+	<line fill="none" stroke="#32CD32" stroke-width="0.05" x1="44.882" y1="16.535" x2="44.882" y2="68.504"/>
+	<line fill="none" stroke="#32CD32" stroke-width="0.05" x1="47.244" y1="16.535" x2="47.244" y2="68.504"/>
+	<line fill="none" stroke="#32CD32" stroke-width="0.05" x1="49.606" y1="16.535" x2="49.606" y2="68.504"/>
+	<line fill="none" stroke="#32CD32" stroke-width="0.05" x1="51.969" y1="16.535" x2="51.969" y2="68.504"/>
+</g>
+</svg>

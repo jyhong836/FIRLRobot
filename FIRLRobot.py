@@ -3,7 +3,7 @@
 # @Author: Junyuan Hong
 # @Date:   2014-12-09 19:19:28
 # @Last Modified by:   Junyuan Hong
-# @Last Modified time: 2014-12-10 13:48:57
+# @Last Modified time: 2014-12-10 14:46:21
 "This is the bovo screenshot module"
 import gtk.gdk as gdk
 import sys
@@ -12,7 +12,6 @@ import re
 import numpy as np
 import time
 import robot
-# import Queue
 
 import mouse
 
@@ -166,4 +165,7 @@ if __name__ == "__main__":
     rob = FIRLRobot()
     # rob.get_chessboard()
     arg = sys.argv
-    rob.loop(max_steps = 20)
+    if len(arg)>1:
+        rob.loop(max_steps = int(arg[1]))
+    else:
+        rob.loop(max_steps = 20)
