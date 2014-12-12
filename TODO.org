@@ -7,19 +7,19 @@
 	- {{LINK}}
 
 --- start ---
-* FEATURES (beta 1.0) [4/9]
+* FEATURES (beta 1.0) [6/9]
 	- [X] Take screenshot of bovo
 	- [X] Auto read chessboard from the bovo screen shot
 	- [X] Robot go steps by estimating mouse
 	- [ ] Use Simplified Artificial Neural Network learn from the chessboard. (learning object is opponent)
 	- [ ] Take the first step part into consideration
-	- [ ] Save the neccessary learning data from playing to variables
+	- [X] Save the neccessary learning data from playing to variables
 	- [ ] Store important learning data to files
-	- [ ] Store learning results (robot :brain:) into files, to make it as fast as possible to load the robot brain
+	- [X] Store learning results (robot :brain:) into files, to make it as fast as possible to load the robot brain
 	- [X] Save Weight matrix 'W' to file 'W.npy'
 
-* ISSUE [0/1]
-	- [ ] HOW to learn, or which learning model should be applied?
+* ISSUE [1/3]
+	- [X] HOW to learn, or which learning model should be applied?
 		* MODEL 1
 			- P_t = W*B_t, P is 22x1 reshped chessboard probability matrix, W is linked wight matrix, B 22x1 reshped chessboard matrix. For P_N = F, F is the result of this game.
 		* MODEL 2
@@ -27,6 +27,14 @@
 		* MODEL 3
 			- X_t = W*B + X_{t-1} + v, X is the state matrix at time t.
 			- P_t = U*X_t 
+	- [ ] Training Method
+		* Model 1
+			- Method 1
+				- W = W + k*(P_{t+1} - P_t), t = 0...N-1
+				- W = W + k*(F - P_{N-1})
+			- Method 2
+				- W = W + k*(T_t - P_t), t = 0...N-1, T_t is the step of the game ai at step t
+				- W = W + k*(F - P_{N-1})
 	- [ ] What's the learning data?
 		- Learn from opponent nowadays.
 

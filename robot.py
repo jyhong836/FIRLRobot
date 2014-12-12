@@ -3,7 +3,7 @@
 # @Author: Junyuan Hong
 # @Date:   2014-12-10 12:30:10
 # @Last Modified by:   Junyuan Hong
-# @Last Modified time: 2014-12-12 10:54:39
+# @Last Modified time: 2014-12-12 11:43:36
 
 from numpy import random
 import numpy as np
@@ -24,6 +24,7 @@ class robot():
 	fail_count = 0
 	game_count = 0
 	steps = 0
+	max_steps = 64
 	W_file_name = 'W.npy'
 
 	def __init__(self, game_part = 2, mode = ROBOT_RANDOM, sz = 22):
@@ -44,7 +45,11 @@ class robot():
 			print "not found W.npy, use random W"
 			self.W = random.rand(self.sz2, self.sz2)
 
+		self.Bs = np.zeros((max_steps, self.sz2, 1))
+		self.F  = np.zeros((self.sz2, 1)) # Final
+
 	def __del__(self):
+		'''save data to files'''
 		np.save(self.W_file_name, self.W)
 		print "\'Good Bye!\', Robot said."
 
@@ -67,9 +72,12 @@ class robot():
 		                else:
 		                	self.game_over(False)
 		            return None
-
-		if self.mode.equal(ROBOT_PLAYING):
+		# game not over, take next step
+		if self.mode.equal(ROBOT_PLAYING) or self.mode.equal(ROBOT_LEARNING):
+			# ROBOT_PLAYING or ROBOT_LEARNING
 			B = chessboard.reshape(self.sz2, 1)
+			print "steps:", steps
+			self.Bs[self.steps, :,:] = B.copy() # save the steps B
 			P = np.dot(self.W, B)
 			P = (B==0)*P
 			PB = P.reshape(self.sz, self.sz)
@@ -81,13 +89,14 @@ class robot():
 				(x, y) = (x[0], y[0])
 			# print "ROBOT:",(x,y)
 		elif self.mode.equal(ROBOT_RANDOM):
+			# ROBOT_RANDOM
 			(x, y) = self.random_step(chessboard)
 
 		self.steps += 1
 		return (x, y)
 
 	def random_step(self, chessboard):
-		'''place chess in a reandom validate place'''
+		'''place chess in a reandom valid place'''
 		x = 0
 		y = 0
 		invalid = True
@@ -112,8 +121,16 @@ class robot():
 		else:
 			print "(green)"
 		print "FAILED in ", self.steps," steps [",self.fail_count,"/",self.game_count,"]"
+
 		if self.mode.equal(ROBOT_LEARNING):
-			pass # TODO proccess the learning data
+			train() # TODO proccess the learning data
+
+	def train(self):
+		# self.F = 
+		self.train(self.F, self.Bs, self.W, self.steps)
+
+	def train(self, F, Bs, W, steps):
+		pass
 		
 if __name__ == "__main__":
 	pass
