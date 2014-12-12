@@ -3,7 +3,7 @@
 # @Author: Junyuan Hong
 # @Date:   2014-12-09 19:19:28
 # @Last Modified by:   Junyuan Hong
-# @Last Modified time: 2014-12-10 14:46:21
+# @Last Modified time: 2014-12-12 10:01:47
 "This is the bovo screenshot module"
 import gtk.gdk as gdk
 import sys
@@ -17,14 +17,14 @@ import mouse
 
 class FIRLRobot(object):
     """FIRLRobot is a self-learning robot for FIR(Five in Row)"""
+    win_offset_x = 9
+    win_offset_y = 48
+    chess_gap = 9.8
+    chess_off = 6
+    chessboard_sz = 22
     def __init__(self):
         super(FIRLRobot, self).__init__()
         self.xid = self.getBovoId()
-        self.win_offset_x = 9
-        self.win_offset_y = 48
-        self.chess_gap = 9.8
-        self.chess_off = 6
-        self.chessboard_sz = 22
 
         # init window
         self.win = gdk.window_foreign_new(self.xid)
@@ -63,6 +63,8 @@ class FIRLRobot(object):
         '''loop for learning, wait \'wait_time\' length time every step'''
         step = 0
         self.new_game()
+        time.sleep(1)
+        print "start loop..."
         while True:
             cb = self.get_chessboard()
             # pos = self.gowhere()

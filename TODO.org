@@ -1,4 +1,4 @@
-* TODO list
+* FIRLRobot TODO list
 	- {{FEATURES (beta 1.0)}}
 	- {{ISSUE}}
 	- {{BUGS}}
@@ -11,16 +11,32 @@
 	- [X] Take screenshot of bovo
 	- [X] Auto read chessboard from the bovo screen shot
 	- [X] Robot go steps by estimating mouse
-	- [ ] Learn from the chessboard
+	- [ ] Use Simplified Artificial Neural Network learn from the chessboard. (learning object is opponent)
+	- [ ] Take the first step part into consideration
+	- [ ] Save the neccessary learning data from playing to variables
+	- [ ] Store important learning data to files
+	- [ ] Store learning results (robot :brain:) into files, to make it as fast as possible to load the robot brain
 
 * ISSUE [0/1]
 	- [ ] HOW to learn, or which learning model should be applied?
+		* MODEL 1
+			- P_t = W*B_t, P is 22x1 reshped chessboard probability matrix, W is linked wight matrix, B 22x1 reshped chessboard matrix. For P_N = F, F is the result of this game.
+		* MODEL 2
+			- P_t = W*B_t + v, v is Gaussian white noise
+		* MODEL 3
+			- X_t = W*B + X_{t-1} + v, X is the state matrix at time t.
+			- P_t = U*X_t 
+	- [ ] What's the learning data?
+		- Learn from opponent nowadays.
 
 * BUGS
+	- [ ] In learning model, red(1), green(2) have the different weight in setting, respect for the different prefer for them?
+	- [X] In ROBOT_MODE.equal function, the compare string is wrong
+	- [X] Start new game at sart, but have not pause for 1 second. As a result, the first step will start a new game if the chessboard is a over game.
 
-* OTHERS [0/2]
+* OTHERS [1/2]
 	- [ ] update README.md
-	- [ ] push to github
+	- [X] push to github
 
 * AUTHOR
 	- Jnyuan Hong [[mailto:jyhong836@gmail.com subject]]
