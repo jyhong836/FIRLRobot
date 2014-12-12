@@ -3,7 +3,7 @@
 # @Author: Junyuan Hong
 # @Date:   2014-12-09 19:19:28
 # @Last Modified by:   Junyuan Hong
-# @Last Modified time: 2014-12-12 18:20:47
+# @Last Modified time: 2014-12-12 19:51:37
 "This is the bovo screenshot module"
 import gtk.gdk as gdk
 import sys
@@ -63,12 +63,24 @@ class FIRLRobot(object):
         '''loop for learning, wait \'wait_time\' length time every step'''
         step = 0
         self.new_game()
+        cb = self.get_chessboard()
+        if len(np.nonzero(self.chessboards[0,:,:] - self.chessboards[1,:,:])[0]) > 1:
+            print "error: start a new game failed, try again"
+            print len(np.nonzero(self.chessboards[0,:,:] - self.chessboards[1,:,:])[0])
+            time.sleep(1)
+            self.new_game()
+            self.chbptr = 0
+            cb = self.get_chessboard()
+            if len(np.nonzero(self.chessboards[0,:,:] - self.chessboards[1,:,:])[0]) > 1:
+                print "error: start a new game failed, exit..."
+                sys.exit(2)
         time.sleep(1)
+        self.chbptr = 0
         print "start loop..."
         while True:
             cb = self.get_chessboard()
-            if len((self.chessboards[0,:,:] - self.chessboards[1,:,:]!=0).flatten(0))==0:
-                print "chessboard not updated"
+            if len(np.nonzero(self.chessboards[0,:,:] - self.chessboards[1,:,:])[0])==0 and step>=1:
+                print "chessboard not updated",len(np.nonzero(self.chessboards[0,:,:] - self.chessboards[1,:,:])[0])
                 continue
             # pos = self.gowhere()
             pos = self.rob.next_step(cb)
@@ -104,7 +116,7 @@ class FIRLRobot(object):
         (x0, y0) = self.mouse.get_position()
         self.mouse.click(1, 16 + self.win_offset_x + self.win_x, -23 + self.win_offset_y + self.win_y)
         self.mouse.moveto(x0, y0)
-        print "click: ",(16 + self.win_offset_x, -23 + self.win_offset_y)
+        # print "click: ",(16 + self.win_offset_x, -23 + self.win_offset_y)
 
     def get_chessboard(self):#, ):
         '''return the 22x22 chessboard, 1 is red part, 2 is green part, negative means game end'''

@@ -7,7 +7,7 @@
 	- {{LINK}}
 
 --- start ---
-* FEATURES (beta 1.0) [10/12]
+* FEATURES (beta 1.0) [11/13]
 	- [X] Take screenshot of bovo
 	- [X] Auto read chessboard from the bovo screen shot
 	- [X] Robot go steps by estimating mouse
@@ -20,7 +20,7 @@
 	- [X] Save Weight matrix 'W' to file 'W.npy'
 	- [X] Save the W matrix to files, and show the W matrix with plt.imshow()
 	- [X] In robot.learn_self and robot.learn_oppo, for less steps the active value is more large, and punish value is less.
-	- [ ] Apply the Model 1 Method 2 to robot.learn_opponent
+	- [X] Apply the Model 1 Method 2 to robot.learn_opponent
 
 * ISSUE [1/3]
 	- [X] HOW to learn, or which learning model should be applied?
@@ -45,14 +45,16 @@
 		- Learn from opponent nowadays.
 	- [ ] The W matrix should be symmetrical?
 
-* BUGS [5/6]
+* BUGS [7/9]
 	- [ ] In learning model, red(1), green(2) have the different weight in setting, respect for the different prefer for them?
 	- [X] In ROBOT_MODE.equal function, the compare string is wrong
 	- [X] Start new game at sart, but have not pause for 1 second. As a result, the first step will start a new game if the chessboard is a over game.
 	- [X] The game rounds should be set but not the max steps
 	- [X] Incorrect steps in robot.py
 	- [X] The W matrix is not updated
-	- [ ] The wait time 1 second may be too short for some situation
+	- [X] The wait time 1 second may be too short for some situation
+	- [X] The Game Start click often failed
+	- [ ] !! the diff_abs_max may be zero
 
 * OTHERS [1/2]
 	- [ ] update README.md
