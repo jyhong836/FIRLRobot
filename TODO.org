@@ -7,10 +7,11 @@
 	- {{LINK}}
 
 --- start ---
-* FEATURES (beta 1.0) [6/9]
+* FEATURES (beta 1.0) [7/10]
 	- [X] Take screenshot of bovo
 	- [X] Auto read chessboard from the bovo screen shot
 	- [X] Robot go steps by estimating mouse
+	- [X] Use Simplified Artificial Neural Network learn from the chessboard. (learning object is self)
 	- [ ] Use Simplified Artificial Neural Network learn from the chessboard. (learning object is opponent)
 	- [ ] Take the first step part into consideration
 	- [X] Save the neccessary learning data from playing to variables
@@ -35,21 +36,24 @@
 			- Method 2
 				- W = W + k*(T_t - P_t), t = 0...N-1, T_t is the step of the game ai at step t
 				- W = W + k*(F - P_{N-1})
+		* Model 2
+		* Model 3
 	- [ ] What's the learning data?
 		- Learn from opponent nowadays.
 
-* BUGS [2/4]
+* BUGS [4/5]
 	- [ ] In learning model, red(1), green(2) have the different weight in setting, respect for the different prefer for them?
 	- [X] In ROBOT_MODE.equal function, the compare string is wrong
 	- [X] Start new game at sart, but have not pause for 1 second. As a result, the first step will start a new game if the chessboard is a over game.
-	- [ ] The game rounds should be set but not the max steps
+	- [X] The game rounds should be set but not the max steps
+	- [X] Incorrect steps in robot.py
 
 * OTHERS [1/2]
 	- [ ] update README.md
 	- [X] push to github
 
 * AUTHOR
-	- Jnyuan Hong [[mailto:jyhong836@gmail.com subject]]
+	- Jnyuan Hong [[mailto:jyhong836@gmail.com]]
 
 * LINK
 	{1} bovo development page [[https://www.kde.org/applications/games/bovo/development]]
