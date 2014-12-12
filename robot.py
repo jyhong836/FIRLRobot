@@ -3,7 +3,7 @@
 # @Author: Junyuan Hong
 # @Date:   2014-12-10 12:30:10
 # @Last Modified by:   Junyuan Hong
-# @Last Modified time: 2014-12-12 17:34:27
+# @Last Modified time: 2014-12-12 18:42:09
 
 from numpy import random
 import numpy as np
@@ -56,6 +56,8 @@ class robot():
 
 		self.Bs = np.zeros((2, self.max_steps, self.sz2, 1))
 		self.F  = np.zeros((self.sz2, 1)) # Final
+
+		self.active_val = 10
 
 	def __del__(self):
 		'''save data to files'''
@@ -158,12 +160,13 @@ class robot():
 	def learn_self(self, win, train_round):
 		# learn from self
 		print "** learn from self **"
-		self.F = self.find_step(np.abs(self.Bs[self.game_part - 1, self.steps, :, :]), self.Bs[self.game_part - 1, self.steps - 1, :, :])
-		active_val = 10
-		if win:
-			self.F = 50/self.steps*active_val*self.F
-		else:
-			self.F = 0.1*self.steps/50*active_val*(self.Bs[self.game_part - 1, self.steps - 1, :, :]==0)*(1 - self.F) # ??? FIXME: 
+		self.F = self.get_estimate_P(win, np.abs(self.Bs[self.game_part - 1, self.steps, :, :]), self.Bs[self.game_part - 1, self.steps - 1, :, :])
+		# self.F = self.find_step(np.abs(self.Bs[self.game_part - 1, self.steps, :, :]), self.Bs[self.game_part - 1, self.steps - 1, :, :])
+		# active_val = 10
+		# if win:
+		# 	self.F = 50/self.steps*active_val*self.F
+		# else:
+		# 	self.F = 0.1*self.steps/50*active_val*(self.Bs[self.game_part - 1, self.steps - 1, :, :]==0)*(1 - self.F) # ??? FIXME: 
 		# self.steps -= 1
 		# if win:
 		# 	train_part = game_part
@@ -179,15 +182,68 @@ class robot():
  		# learn from opponent
  		print "** learn from opponent **"
  		win = not win
-		self.F = self.find_step(np.abs(self.Bs[self.oppo_part - 1, self.steps, :, :]), self.Bs[self.oppo_part - 1, self.steps - 1, :, :])
-		active_val = 10
-		if win:
-			self.F = 50/self.steps*active_val*self.F
-		else:
-			self.F = 0.1*50/self.steps*active_val*(self.Bs[self.game_part - 1, self.steps - 1, :, :]==0)*(1 - self.F)
+		# self.F = self.find_step(np.abs(self.Bs[self.oppo_part - 1, self.steps, :, :]), self.Bs[self.oppo_part - 1, self.steps - 1, :, :])
+		# if win:
+		# 	self.F = 50/self.steps*active_val*self.F
+		# else:
+		# 	self.F = 0.1*50/self.steps*active_val*(self.Bs[self.game_part - 1, self.steps - 1, :, :]==0)*(1 - self.F)
+		self.F = self.get_estimate_P(win, np.abs(self.Bs[self.oppo_part - 1, self.steps, :, :]), self.Bs[self.oppo_part - 1, self.steps - 1, :, :])
 
 		train_part = self.oppo_part
 		self.train(self.F, self.Bs[self.oppo_part - 1, :,:,:], self.steps - 1, train_part, train_k = 0.05, train_round = train_round)
+
+	def get_estimate_P(self, win, B_cur, B_pre):
+		'''return the estimate of P'''
+		P = self.find_step(B_cur, B_pre)
+		if win:
+			P = 50/self.steps*self.active_val*P
+		else:
+			P = 0.1*50/self.steps*self.active_val*(B_pre==0)*(1 - P)
+		return P
+
+	def train_md1_m2(self, F, Bs, steps, train_part, train_k = 1, train_round = 10):
+		'''Model 1 Method 2'''
+		# W = self.W
+		print "train round:", 0
+		if self.game_part != train_part:
+			for x in xrange(0, self.sz2):
+				if Bs[steps, x, 0] !=0:
+					Bs[steps, x, 0] = 3 - Bs[steps, x, 0]
+		diff = F - np.dot(self.W, Bs[steps, :, :])
+		print "  max Final diff:", np.max(diff)
+		print "  min Final diff:", np.min(diff)
+		self.W = self.W + train_k*Bs[steps, :, :].T*diff / np.max(np.abs(diff))
+		for t in xrange(steps-1, 0-1, -1):
+			if self.game_part != train_part:
+				for x in xrange(0, self.sz2):
+					if Bs[steps, x, 0] !=0:
+						Bs[steps, x, 0] = 3 - Bs[steps, x, 0]
+			diff = (np.dot(self.W, Bs[t+1, :, :]) - np.dot(self.W, Bs[t, :, :]))
+			self.W = self.W + train_k*Bs[t, :, :].T*diff / np.max(np.abs(diff)) / (t+1)
+
+		for r in xrange(1, train_round):
+			print "train round:", r
+			diff = F - np.dot(self.W, Bs[steps, :, :])
+			diff_max = np.max(diff)
+			diff_min = np.min(diff)
+			diff_abs_max = np.max(np.abs(diff))
+			if diff_abs_max==0:
+				print "error: diff_abs_max is zero, exit..."
+				sys.exit()
+			print "  max Final diff:", diff_max
+			print "  min Final diff:", diff_min
+			if diff_max < 0.01 and diff_min > -0.01: 
+				break
+			self.W = self.W + train_k*Bs[steps, :, :].T*diff / diff_abs_max
+			for t in xrange(steps-1, 0-1, -1):
+				diff = (np.dot(self.W, Bs[t+1, :, :]) - np.dot(self.W, Bs[t, :, :]))
+				diff_abs_max = np.max(np.abs(diff))
+				if diff_abs_max==0:
+					print "error: diff_abs_max is zero, exit..."
+					sys.exit()
+				self.W = self.W + train_k*Bs[t, :, :].T*diff / diff_abs_max / (t+1)
+
+		np.save('data/W/%04d'%self.game_count, self.W)
 
 	def train_x(self, win, train_round = 100):
 		self.learn_self(win, train_round)
@@ -195,6 +251,7 @@ class robot():
 
 
 	def train(self, F, Bs, steps, train_part, train_k = 1, train_round = 10):
+		'''Model 1 Method 1'''
 		# W = self.W
 		print "train round:", 0
 		if self.game_part != train_part:
