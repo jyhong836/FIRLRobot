@@ -7,7 +7,7 @@
 	- {{LINK}}
 
 --- start ---
-* FEATURES (beta 1.0) [3/3]
+* FEATURES (beta 1.0) [4/9]
 	- [X] Take screenshot of bovo
 	- [X] Auto read chessboard from the bovo screen shot
 	- [X] Robot go steps by estimating mouse
@@ -16,6 +16,7 @@
 	- [ ] Save the neccessary learning data from playing to variables
 	- [ ] Store important learning data to files
 	- [ ] Store learning results (robot :brain:) into files, to make it as fast as possible to load the robot brain
+	- [X] Save Weight matrix 'W' to file 'W.npy'
 
 * ISSUE [0/1]
 	- [ ] HOW to learn, or which learning model should be applied?
@@ -29,10 +30,11 @@
 	- [ ] What's the learning data?
 		- Learn from opponent nowadays.
 
-* BUGS
+* BUGS [2/4]
 	- [ ] In learning model, red(1), green(2) have the different weight in setting, respect for the different prefer for them?
 	- [X] In ROBOT_MODE.equal function, the compare string is wrong
 	- [X] Start new game at sart, but have not pause for 1 second. As a result, the first step will start a new game if the chessboard is a over game.
+	- [ ] The game rounds should be set but not the max steps
 
 * OTHERS [1/2]
 	- [ ] update README.md

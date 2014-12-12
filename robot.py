@@ -3,10 +3,11 @@
 # @Author: Junyuan Hong
 # @Date:   2014-12-10 12:30:10
 # @Last Modified by:   Junyuan Hong
-# @Last Modified time: 2014-12-12 09:58:42
+# @Last Modified time: 2014-12-12 10:54:39
 
 from numpy import random
 import numpy as np
+import os
 
 class ROBOT_MODE():
 	def __init__(self, str):
@@ -23,6 +24,7 @@ class robot():
 	fail_count = 0
 	game_count = 0
 	steps = 0
+	W_file_name = 'W.npy'
 
 	def __init__(self, game_part = 2, mode = ROBOT_RANDOM, sz = 22):
 		'''game_part: 1, red part; 2, green part'''
@@ -35,7 +37,16 @@ class robot():
 		self.sz2 = sz*sz
 
 		# init matrics
-		self.W = random.rand(self.sz2, self.sz2)
+		if os.path.exists(self.W_file_name):
+			print "found W.npy"
+			self.W = np.load(self.W_file_name)
+		else:
+			print "not found W.npy, use random W"
+			self.W = random.rand(self.sz2, self.sz2)
+
+	def __del__(self):
+		np.save(self.W_file_name, self.W)
+		print "\'Good Bye!\', Robot said."
 
 	def next_step(self, chessboard):
 		'''return the estimate step(x,y), return None if game over'''
@@ -56,12 +67,19 @@ class robot():
 		                else:
 		                	self.game_over(False)
 		            return None
+
 		if self.mode.equal(ROBOT_PLAYING):
 			B = chessboard.reshape(self.sz2, 1)
-			P = (B==0)*dot(self.W, B)
+			P = np.dot(self.W, B)
+			P = (B==0)*P
 			PB = P.reshape(self.sz, self.sz)
-			(x, y) = np.nonzero(PB==PB.max())
-			(x, y) = (x[0], y[0])
+			(y, x) = np.nonzero(PB==PB.max())
+			# print (y,x)
+			if len(x)>1:
+				(x, y) = (x[random.randint(0,len(x))], y[random.randint(0,len(y))])
+			else:
+				(x, y) = (x[0], y[0])
+			# print "ROBOT:",(x,y)
 		elif self.mode.equal(ROBOT_RANDOM):
 			(x, y) = self.random_step(chessboard)
 
@@ -75,8 +93,8 @@ class robot():
 		invalid = True
 		while invalid:
 			# FIXME: for some situation, this will be endless
-		    x = random.randint(0, self.sz-1)
-		    y = random.randint(0, self.sz-1)
+		    x = random.randint(0, self.sz)
+		    y = random.randint(0, self.sz)
 		    if chessboard[y, x]==0:
 		        invalid = False
 		return (x, y)

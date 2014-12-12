@@ -3,7 +3,7 @@
 # @Author: Junyuan Hong
 # @Date:   2014-12-09 19:19:28
 # @Last Modified by:   Junyuan Hong
-# @Last Modified time: 2014-12-12 10:01:47
+# @Last Modified time: 2014-12-12 10:15:04
 "This is the bovo screenshot module"
 import gtk.gdk as gdk
 import sys
@@ -57,7 +57,7 @@ class FIRLRobot(object):
         self.mouse = mouse.mouse()
 
         # init robot
-        self.rob  = robot.robot()
+        self.rob  = robot.robot(mode = robot.ROBOT_PLAYING)
 
     def loop(self, max_steps = 10000, wait_time=1):
         '''loop for learning, wait \'wait_time\' length time every step'''
@@ -167,6 +167,7 @@ if __name__ == "__main__":
     rob = FIRLRobot()
     # rob.get_chessboard()
     arg = sys.argv
+    # The game rounds should be set but not the max steps
     if len(arg)>1:
         rob.loop(max_steps = int(arg[1]))
     else:
