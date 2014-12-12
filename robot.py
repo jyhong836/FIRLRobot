@@ -3,7 +3,7 @@
 # @Author: Junyuan Hong
 # @Date:   2014-12-10 12:30:10
 # @Last Modified by:   Junyuan Hong
-# @Last Modified time: 2014-12-12 13:36:47
+# @Last Modified time: 2014-12-12 15:49:13
 
 from numpy import random
 import numpy as np
@@ -31,6 +31,10 @@ class robot():
 		'''game_part: 1, red part; 2, green part'''
 		self.mode = mode
 		self.game_part = game_part
+		if game_part==1:
+			self.oppo_part = 2
+		else:
+			self.oppo_part = 1
 		print "MODE: ", mode.str
 		if mode.equal(ROBOT_LEARNING):
 			pass# TODO create new learning model
@@ -41,11 +45,14 @@ class robot():
 		if os.path.exists(self.W_file_name):
 			print "found W.npy"
 			self.W = np.load(self.W_file_name)
+		# else:
+		# 	print "not found W.npy, use random W"
+		# 	self.W = random.rand(self.sz2, self.sz2)
 		else:
-			print "not found W.npy, use random W"
-			self.W = random.rand(self.sz2, self.sz2)
+			print "not found W.npy, use zero W"
+			self.W = np.zeros((self.sz2, self.sz2))
 
-		self.Bs = np.zeros((self.max_steps, self.sz2, 1))
+		self.Bs = np.zeros((2, self.max_steps, self.sz2, 1))
 		self.F  = np.zeros((self.sz2, 1)) # Final
 
 	def __del__(self):
@@ -61,7 +68,8 @@ class robot():
 				if chessboard[y, x] < 0:
 					B = chessboard.reshape(self.sz2, 1)
 					print "final chessboad:", self.steps
-					self.Bs[self.steps, :,:] = B.copy() # save the steps B
+					self.Bs[self.game_part - 1, self.steps, :,:] = B.copy() # save the steps B
+					self.Bs[self.oppo_part - 1, self.steps, :,:] = self.Bs[self.game_part - 1, self.steps, :,:] # save the steps B
 					if chessboard[y, x] == -1:
 					    print "red part win"
 					    if self.game_part == 1:
@@ -79,10 +87,6 @@ class robot():
 		if self.mode.equal(ROBOT_PLAYING) or self.mode.equal(ROBOT_LEARNING):
 			# ROBOT_PLAYING or ROBOT_LEARNING
 			B = chessboard.reshape(self.sz2, 1)
-
-			print "steps:", self.steps
-			self.Bs[self.steps, :,:] = B.copy() # save the steps B
-
 			P = np.dot(self.W, B)
 			P = (B==0)*P
 			PB = P.reshape(self.sz, self.sz)
@@ -93,6 +97,13 @@ class robot():
 			else:
 				(x, y) = (x[0], y[0])
 			# print "ROBOT:",(x,y)
+
+			# save steps B of robot
+			print "steps:", self.steps
+			self.Bs[self.game_part - 1, self.steps, :,:] = B.copy()
+			# save steps B of game ai
+			chessboard[y, x] = self.game_part
+			self.Bs[self.oppo_part - 1, self.steps, :,:] = B.copy()
 		elif self.mode.equal(ROBOT_RANDOM):
 			# ROBOT_RANDOM
 			(x, y) = self.random_step(chessboard)
@@ -141,14 +152,15 @@ class robot():
 		D[y[0], x[0]] = 1
 		return D
 
-	def train_x(self, win, train_round = 10):
-		# self.F = # game_part
-		self.F = self.find_step(np.abs(self.Bs[self.steps, :, :]), self.Bs[self.steps - 1, :, :])
+	def learn_self(self, win, train_round):
+		# learn from self
+		print "** learn from self **"
+		self.F = self.find_step(np.abs(self.Bs[self.game_part - 1, self.steps, :, :]), self.Bs[self.game_part - 1, self.steps - 1, :, :])
 		active_val = 10
 		if win:
 			self.F = active_val*self.F
 		else:
-			self.F = 0.1*active_val*(self.Bs[self.steps - 1, :, :]==0)*(1 - self.F) # ??? FIXME: 
+			self.F = 0.1*active_val*(self.Bs[self.game_part - 1, self.steps - 1, :, :]==0)*(1 - self.F) # ??? FIXME: 
 		# self.steps -= 1
 		# if win:
 		# 	train_part = game_part
@@ -158,16 +170,37 @@ class robot():
 		# 	else:
 		# 		train_part = 1
 		train_part = self.game_part
-		self.train(self.F, self.Bs, self.W, self.steps - 1, train_part, train_k = 0.1, train_round = train_round)
+		self.train(self.F, self.Bs[self.game_part - 1, :,:,:], self.W, self.steps - 1, train_part, train_k = 0.1, train_round = train_round)
+
+	def learn_oppo(self, win, train_round):
+ 		# learn from opponent
+ 		print "** learn from opponent **"
+ 		win = not win
+		self.F = self.find_step(np.abs(self.Bs[self.oppo_part - 1, self.steps, :, :]), self.Bs[self.oppo_part - 1, self.steps - 1, :, :])
+		active_val = 10
+		if win:
+			self.F = active_val*self.F
+		else:
+			self.F = 0.1*active_val*(self.Bs[self.game_part - 1, self.steps - 1, :, :]==0)*(1 - self.F)
+
+		train_part = self.oppo_part
+		self.train(self.F, self.Bs[self.oppo_part - 1, :,:,:], self.W, self.steps - 1, train_part, train_k = 0.1, train_round = train_round)
+
+	def train_x(self, win, train_round = 100):
+		# self.learn_self(win, train_round)
+		self.learn_oppo(win, train_round)
+
 
 	def train(self, F, Bs, W, steps, train_part, train_k = 1, train_round = 10):
 		print "train round:", 0
 		if self.game_part != train_part:
 			for x in xrange(0, self.sz2):
-				if Bs[steps, x, 1] == 1:
-					Bs[steps, x, 1] = 2
-				else:
-					Bs[steps, x, 1] = 1
+				# if Bs[steps, x, 1] == 1:
+				# 	Bs[steps, x, 1] = 2
+				# else:
+				# 	Bs[steps, x, 1] = 1
+				if Bs[steps, x, 0] !=0:
+					Bs[steps, x, 0] = 3 - Bs[steps, x, 0]
 		diff = F - np.dot(W, Bs[steps, :, :])
 		print "  max Final diff:", np.max(diff)
 		print "  min Final diff:", np.min(diff)
@@ -175,22 +208,26 @@ class robot():
 		for t in xrange(steps-1, 0-1, -1):
 			if self.game_part != train_part:
 				for x in xrange(0, self.sz2):
-					if Bs[t, x, 1] == 1:
-						Bs[t, x, 1] = 2
-					else:
-						Bs[t, x, 1] = 1
+					# if Bs[t, x, 1] == 1:
+					# 	Bs[t, x, 1] = 2
+					# else:
+					# 	Bs[t, x, 1] = 1
+					if Bs[steps, x, 0] !=0:
+						Bs[steps, x, 0] = 3 - Bs[steps, x, 0]
 			diff = (np.dot(W, Bs[t+1, :, :]) - np.dot(W, Bs[t, :, :]))
-			W = W + train_k*Bs[t, :, :].T*diff / np.max(diff)
+			W = W + train_k*Bs[t, :, :].T*diff / np.max(diff) / (t+1)
 
 		for r in xrange(1, train_round):
 			print "train round:", r
 			diff = F - np.dot(W, Bs[steps, :, :])
 			print "  max Final diff:", np.max(diff)
 			print "  min Final diff:", np.min(diff)
+			if np.max(diff) < 0.1 and np.min(diff) > -0.1: 
+				break
 			W = W + train_k*Bs[steps, :, :].T*diff / np.max(diff)
 			for t in xrange(steps-1, 0-1, -1):
 				diff = (np.dot(W, Bs[t+1, :, :]) - np.dot(W, Bs[t, :, :]))
-				W = W + train_k*Bs[t, :, :].T*diff / np.max(diff)
+				W = W + train_k*Bs[t, :, :].T*diff / np.max(diff) / (t+1)
 		
 if __name__ == "__main__":
 	pass

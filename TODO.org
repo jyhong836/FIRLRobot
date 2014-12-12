@@ -7,17 +7,18 @@
 	- {{LINK}}
 
 --- start ---
-* FEATURES (beta 1.0) [7/10]
+* FEATURES (beta 1.0) [8/10]
 	- [X] Take screenshot of bovo
 	- [X] Auto read chessboard from the bovo screen shot
 	- [X] Robot go steps by estimating mouse
 	- [X] Use Simplified Artificial Neural Network learn from the chessboard. (learning object is self)
-	- [ ] Use Simplified Artificial Neural Network learn from the chessboard. (learning object is opponent)
+	- [X] Use Simplified Artificial Neural Network learn from the chessboard. (learning object is opponent)
 	- [ ] Take the first step part into consideration
 	- [X] Save the neccessary learning data from playing to variables
 	- [ ] Store important learning data to files
 	- [X] Store learning results (robot :brain:) into files, to make it as fast as possible to load the robot brain
 	- [X] Save Weight matrix 'W' to file 'W.npy'
+	- [ ] Show the W matrix with plt.imshow()
 
 * ISSUE [1/3]
 	- [X] HOW to learn, or which learning model should be applied?
