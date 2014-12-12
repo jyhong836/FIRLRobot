@@ -3,7 +3,7 @@
 # @Author: Junyuan Hong
 # @Date:   2014-12-09 19:19:28
 # @Last Modified by:   Junyuan Hong
-# @Last Modified time: 2014-12-12 13:27:45
+# @Last Modified time: 2014-12-12 18:20:47
 "This is the bovo screenshot module"
 import gtk.gdk as gdk
 import sys
@@ -67,6 +67,9 @@ class FIRLRobot(object):
         print "start loop..."
         while True:
             cb = self.get_chessboard()
+            if len((self.chessboards[0,:,:] - self.chessboards[1,:,:]!=0).flatten(0))==0:
+                print "chessboard not updated"
+                continue
             # pos = self.gowhere()
             pos = self.rob.next_step(cb)
             if pos==None:

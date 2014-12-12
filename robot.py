@@ -3,7 +3,7 @@
 # @Author: Junyuan Hong
 # @Date:   2014-12-10 12:30:10
 # @Last Modified by:   Junyuan Hong
-# @Last Modified time: 2014-12-12 17:04:35
+# @Last Modified time: 2014-12-12 17:34:27
 
 from numpy import random
 import numpy as np
@@ -93,6 +93,7 @@ class robot():
 			P = (B==0)*P
 			PB = P.reshape(self.sz, self.sz)
 			(y, x) = np.nonzero(PB==PB.max())
+			np.save('WW.npy', self.W)
 			# print (y,x)
 			if len(x)>1:
 				(x, y) = (x[random.randint(0,len(x))], y[random.randint(0,len(y))])
@@ -160,9 +161,9 @@ class robot():
 		self.F = self.find_step(np.abs(self.Bs[self.game_part - 1, self.steps, :, :]), self.Bs[self.game_part - 1, self.steps - 1, :, :])
 		active_val = 10
 		if win:
-			self.F = active_val*self.F
+			self.F = 50/self.steps*active_val*self.F
 		else:
-			self.F = 0.1*active_val*(self.Bs[self.game_part - 1, self.steps - 1, :, :]==0)*(1 - self.F) # ??? FIXME: 
+			self.F = 0.1*self.steps/50*active_val*(self.Bs[self.game_part - 1, self.steps - 1, :, :]==0)*(1 - self.F) # ??? FIXME: 
 		# self.steps -= 1
 		# if win:
 		# 	train_part = game_part
@@ -172,7 +173,7 @@ class robot():
 		# 	else:
 		# 		train_part = 1
 		train_part = self.game_part
-		self.train(self.F, self.Bs[self.game_part - 1, :,:,:], self.steps - 1, train_part, train_k = 0.1, train_round = train_round)
+		self.train(self.F, self.Bs[self.game_part - 1, :,:,:], self.steps - 1, train_part, train_k = 0.05, train_round = train_round)
 
 	def learn_oppo(self, win, train_round):
  		# learn from opponent
@@ -181,15 +182,15 @@ class robot():
 		self.F = self.find_step(np.abs(self.Bs[self.oppo_part - 1, self.steps, :, :]), self.Bs[self.oppo_part - 1, self.steps - 1, :, :])
 		active_val = 10
 		if win:
-			self.F = active_val*self.F
+			self.F = 50/self.steps*active_val*self.F
 		else:
-			self.F = 0.1*active_val*(self.Bs[self.game_part - 1, self.steps - 1, :, :]==0)*(1 - self.F)
+			self.F = 0.1*50/self.steps*active_val*(self.Bs[self.game_part - 1, self.steps - 1, :, :]==0)*(1 - self.F)
 
 		train_part = self.oppo_part
-		self.train(self.F, self.Bs[self.oppo_part - 1, :,:,:], self.steps - 1, train_part, train_k = 0.1, train_round = train_round)
+		self.train(self.F, self.Bs[self.oppo_part - 1, :,:,:], self.steps - 1, train_part, train_k = 0.05, train_round = train_round)
 
 	def train_x(self, win, train_round = 100):
-		# self.learn_self(win, train_round)
+		self.learn_self(win, train_round)
 		self.learn_oppo(win, train_round)
 
 
@@ -226,14 +227,24 @@ class robot():
 		for r in xrange(1, train_round):
 			print "train round:", r
 			diff = F - np.dot(self.W, Bs[steps, :, :])
-			print "  max Final diff:", np.max(diff)
-			print "  min Final diff:", np.min(diff)
-			if np.max(diff) < 0.1 and np.min(diff) > -0.1: 
+			diff_max = np.max(diff)
+			diff_min = np.min(diff)
+			diff_abs_max = np.max(np.abs(diff))
+			if diff_abs_max==0:
+				print "error: diff_abs_max is zero, exit..."
+				sys.exit()
+			print "  max Final diff:", diff_max
+			print "  min Final diff:", diff_min
+			if diff_max < 0.01 and diff_min > -0.01: 
 				break
-			self.W = self.W + train_k*Bs[steps, :, :].T*diff / np.max(np.abs(diff))
+			self.W = self.W + train_k*Bs[steps, :, :].T*diff / diff_abs_max
 			for t in xrange(steps-1, 0-1, -1):
 				diff = (np.dot(self.W, Bs[t+1, :, :]) - np.dot(self.W, Bs[t, :, :]))
-				self.W = self.W + train_k*Bs[t, :, :].T*diff / np.max(np.abs(diff)) / (t+1)
+				diff_abs_max = np.max(np.abs(diff))
+				if diff_abs_max==0:
+					print "error: diff_abs_max is zero, exit..."
+					sys.exit()
+				self.W = self.W + train_k*Bs[t, :, :].T*diff / diff_abs_max / (t+1)
 		# plt.imshow(W, origin='lower', interpolation='nearest', cmap = plt.get_cmap('copper'))
 		# plt.show()
 		np.save('data/W/%04d'%self.game_count, self.W)
