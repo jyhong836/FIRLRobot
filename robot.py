@@ -3,11 +3,12 @@
 # @Author: Junyuan Hong
 # @Date:   2014-12-10 12:30:10
 # @Last Modified by:   Junyuan Hong
-# @Last Modified time: 2014-12-12 15:49:13
+# @Last Modified time: 2014-12-12 17:04:35
 
 from numpy import random
 import numpy as np
 import os
+import matplotlib.pyplot as plt
 
 class ROBOT_MODE():
 	def __init__(self, str):
@@ -50,7 +51,8 @@ class robot():
 		# 	self.W = random.rand(self.sz2, self.sz2)
 		else:
 			print "not found W.npy, use zero W"
-			self.W = np.zeros((self.sz2, self.sz2))
+			# self.W = np.zeros((self.sz2, self.sz2))
+			self.W = np.eye(self.sz2)
 
 		self.Bs = np.zeros((2, self.max_steps, self.sz2, 1))
 		self.F  = np.zeros((self.sz2, 1)) # Final
@@ -170,7 +172,7 @@ class robot():
 		# 	else:
 		# 		train_part = 1
 		train_part = self.game_part
-		self.train(self.F, self.Bs[self.game_part - 1, :,:,:], self.W, self.steps - 1, train_part, train_k = 0.1, train_round = train_round)
+		self.train(self.F, self.Bs[self.game_part - 1, :,:,:], self.steps - 1, train_part, train_k = 0.1, train_round = train_round)
 
 	def learn_oppo(self, win, train_round):
  		# learn from opponent
@@ -184,14 +186,15 @@ class robot():
 			self.F = 0.1*active_val*(self.Bs[self.game_part - 1, self.steps - 1, :, :]==0)*(1 - self.F)
 
 		train_part = self.oppo_part
-		self.train(self.F, self.Bs[self.oppo_part - 1, :,:,:], self.W, self.steps - 1, train_part, train_k = 0.1, train_round = train_round)
+		self.train(self.F, self.Bs[self.oppo_part - 1, :,:,:], self.steps - 1, train_part, train_k = 0.1, train_round = train_round)
 
 	def train_x(self, win, train_round = 100):
 		# self.learn_self(win, train_round)
 		self.learn_oppo(win, train_round)
 
 
-	def train(self, F, Bs, W, steps, train_part, train_k = 1, train_round = 10):
+	def train(self, F, Bs, steps, train_part, train_k = 1, train_round = 10):
+		# W = self.W
 		print "train round:", 0
 		if self.game_part != train_part:
 			for x in xrange(0, self.sz2):
@@ -201,10 +204,10 @@ class robot():
 				# 	Bs[steps, x, 1] = 1
 				if Bs[steps, x, 0] !=0:
 					Bs[steps, x, 0] = 3 - Bs[steps, x, 0]
-		diff = F - np.dot(W, Bs[steps, :, :])
+		diff = F - np.dot(self.W, Bs[steps, :, :])
 		print "  max Final diff:", np.max(diff)
 		print "  min Final diff:", np.min(diff)
-		W = W + train_k*Bs[steps, :, :].T*diff / np.max(diff)
+		self.W = self.W + train_k*Bs[steps, :, :].T*diff / np.max(np.abs(diff))
 		for t in xrange(steps-1, 0-1, -1):
 			if self.game_part != train_part:
 				for x in xrange(0, self.sz2):
@@ -214,20 +217,26 @@ class robot():
 					# 	Bs[t, x, 1] = 1
 					if Bs[steps, x, 0] !=0:
 						Bs[steps, x, 0] = 3 - Bs[steps, x, 0]
-			diff = (np.dot(W, Bs[t+1, :, :]) - np.dot(W, Bs[t, :, :]))
-			W = W + train_k*Bs[t, :, :].T*diff / np.max(diff) / (t+1)
+			diff = (np.dot(self.W, Bs[t+1, :, :]) - np.dot(self.W, Bs[t, :, :]))
+			self.W = self.W + train_k*Bs[t, :, :].T*diff / np.max(np.abs(diff)) / (t+1)
+
+		# plt.imshow(W, origin='lower', interpolation='nearest', cmap = plt.get_cmap('copper'))
+		# plt.show()
 
 		for r in xrange(1, train_round):
 			print "train round:", r
-			diff = F - np.dot(W, Bs[steps, :, :])
+			diff = F - np.dot(self.W, Bs[steps, :, :])
 			print "  max Final diff:", np.max(diff)
 			print "  min Final diff:", np.min(diff)
 			if np.max(diff) < 0.1 and np.min(diff) > -0.1: 
 				break
-			W = W + train_k*Bs[steps, :, :].T*diff / np.max(diff)
+			self.W = self.W + train_k*Bs[steps, :, :].T*diff / np.max(np.abs(diff))
 			for t in xrange(steps-1, 0-1, -1):
-				diff = (np.dot(W, Bs[t+1, :, :]) - np.dot(W, Bs[t, :, :]))
-				W = W + train_k*Bs[t, :, :].T*diff / np.max(diff) / (t+1)
-		
+				diff = (np.dot(self.W, Bs[t+1, :, :]) - np.dot(self.W, Bs[t, :, :]))
+				self.W = self.W + train_k*Bs[t, :, :].T*diff / np.max(np.abs(diff)) / (t+1)
+		# plt.imshow(W, origin='lower', interpolation='nearest', cmap = plt.get_cmap('copper'))
+		# plt.show()
+		np.save('data/W/%04d'%self.game_count, self.W)
+
 if __name__ == "__main__":
 	pass
