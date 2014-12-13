@@ -3,7 +3,7 @@
 # @Author: Junyuan Hong
 # @Date:   2014-12-09 19:19:28
 # @Last Modified by:   Junyuan Hong
-# @Last Modified time: 2014-12-12 19:51:37
+# @Last Modified time: 2014-12-12 20:20:59
 "This is the bovo screenshot module"
 import gtk.gdk as gdk
 import sys
@@ -63,15 +63,16 @@ class FIRLRobot(object):
         '''loop for learning, wait \'wait_time\' length time every step'''
         step = 0
         self.new_game()
+        self.chbptr = 0
         cb = self.get_chessboard()
-        if len(np.nonzero(self.chessboards[0,:,:] - self.chessboards[1,:,:])[0]) > 1:
+        if len(np.nonzero(self.chessboards[self.chbptr,:,:])[0]) > 1:
             print "error: start a new game failed, try again"
-            print len(np.nonzero(self.chessboards[0,:,:] - self.chessboards[1,:,:])[0])
-            time.sleep(1)
+            print len(np.nonzero(self.chessboards[self.chbptr,:,:])[0])
+            time.sleep(2)
             self.new_game()
             self.chbptr = 0
             cb = self.get_chessboard()
-            if len(np.nonzero(self.chessboards[0,:,:] - self.chessboards[1,:,:])[0]) > 1:
+            if len(np.nonzero(self.chessboards[self.chbptr,:,:])[0]) > 1:
                 print "error: start a new game failed, exit..."
                 sys.exit(2)
         time.sleep(1)
@@ -79,13 +80,27 @@ class FIRLRobot(object):
         print "start loop..."
         while True:
             cb = self.get_chessboard()
-            if len(np.nonzero(self.chessboards[0,:,:] - self.chessboards[1,:,:])[0])==0 and step>=1:
-                print "chessboard not updated",len(np.nonzero(self.chessboards[0,:,:] - self.chessboards[1,:,:])[0])
-                continue
+            # if len(np.nonzero(self.chessboards[0,:,:] - self.chessboards[1,:,:])[0])==0 and step>=1:
+            #     print "chessboard not updated",len(np.nonzero(self.chessboards[0,:,:] - self.chessboards[1,:,:])[0])
+            #     continue
             # pos = self.gowhere()
             pos = self.rob.next_step(cb)
             if pos==None:
                 self.new_game()
+                time.sleep(1)
+                self.chbptr = 0
+                cb = self.get_chessboard()
+                if len(np.nonzero(self.chessboards[self.chbptr,:,:])[0]) > 1:
+                    print "error: start a new game failed, try again",
+                    print len(np.nonzero(self.chessboards[self.chbptr,:,:])[0])
+                    self.new_game()
+                    time.sleep(1)
+                    self.chbptr = 0
+                    cb = self.get_chessboard()
+                    if len(np.nonzero(self.chessboards[self.chbptr,:,:])[0]) > 1:
+                        print "error: start a new game failed, exit...",
+                        print len(np.nonzero(self.chessboards[self.chbptr,:,:])[0])
+                        sys.exit(2)
             else:
                 (x, y) = pos
                 self.put_chess(x, y)

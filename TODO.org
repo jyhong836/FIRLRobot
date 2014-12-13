@@ -54,7 +54,8 @@
 	- [X] The W matrix is not updated
 	- [X] The wait time 1 second may be too short for some situation
 	- [X] The Game Start click often failed
-	- [ ] !! the diff_abs_max may be zero
+	- [ ] !! the diff_abs_max may be zero <= sometimes click not walk
+	- [ ] The W matrix is not symmetrical in unstrict level.
 
 * OTHERS [1/2]
 	- [ ] update README.md

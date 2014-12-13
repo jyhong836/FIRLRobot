@@ -3,13 +3,15 @@
 # @Author: Junyuan Hong
 # @Date:   2014-12-10 12:30:10
 # @Last Modified by:   Junyuan Hong
-# @Last Modified time: 2014-12-12 19:51:13
+# @Last Modified time: 2014-12-12 22:59:34
 
 from numpy import random
 import numpy as np
 import os
 import matplotlib.pyplot as plt
 import sys
+
+import pdb
 
 class ROBOT_MODE():
 	def __init__(self, str):
@@ -53,7 +55,7 @@ class robot():
 		else:
 			print "not found W.npy, use zero W"
 			# self.W = np.zeros((self.sz2, self.sz2))
-			self.W = np.eye(self.sz2)
+			self.W = 0.1*np.eye(self.sz2)
 
 		self.Bs = np.zeros((2, self.max_steps, self.sz2, 1))
 		self.F  = np.zeros((self.sz2, 1)) # Final
@@ -96,7 +98,6 @@ class robot():
 			P = (B==0)*P
 			PB = P.reshape(self.sz, self.sz)
 			(y, x) = np.nonzero(PB==PB.max())
-			np.save('WW.npy', self.W)
 			# print (y,x)
 			if len(x)>1:
 				(x, y) = (x[random.randint(0,len(x))], y[random.randint(0,len(y))])
@@ -206,15 +207,15 @@ class robot():
 		'''return the estimate of P'''
 		P = self.find_step(B_cur, B_pre)
 		if win:
-			P = 50/self.steps*self.active_val*P
+			P = 0.008*50/self.steps*self.active_val*P
 		else:
-			P = 0.1*50/self.steps*self.active_val*(B_pre==0)*(1 - P)
+			P = 0.0008*50/self.steps*self.active_val*(B_pre==0)*(1 - P)
 		return P
 
 	def train_md1_m2(self, win, F, Bs, steps, train_part, train_k = 1, train_round = 10):
 		'''Model 1 Method 2'''
 		# W = self.W
-		print __name__, "train round:", 0
+		print __name__, "train round:", 0,
 		if self.game_part != train_part:
 			for x in xrange(0, self.sz2):
 				if Bs[steps, x, 0] !=0:
@@ -222,10 +223,10 @@ class robot():
 		diff = F - np.dot(self.W, Bs[steps, :, :])
 		diff_abs_max = np.max(np.abs(diff))
 		if diff_abs_max==0:
-			print "error: diff_abs_max is zero, exit..."
+			print "error: diff_abs_max is zero, exit..." # FIXME: the diff_abs_max may be zero
 			sys.exit()
-		print "  max Final diff:", np.max(diff)
-		print "  min Final diff:", np.min(diff)
+		# print "  max Final diff:", np.max(diff)
+		# print "  min Final diff:", np.min(diff)
 		self.W = self.W + train_k*Bs[steps, :, :].T*diff / diff_abs_max
 		for t in xrange(steps-1, 0-1, -1):
 			if self.game_part != train_part:
@@ -241,7 +242,7 @@ class robot():
 			self.W = self.W + train_k*Bs[t, :, :].T*diff / diff_abs_max / (t+1)
 
 		for r in xrange(1, train_round):
-			print "train round:", r
+			print "\rtrain round:", r,"       ",
 			diff = F - np.dot(self.W, Bs[steps, :, :])
 			diff_max = np.max(diff)
 			diff_min = np.min(diff)
@@ -249,8 +250,8 @@ class robot():
 			if diff_abs_max==0:
 				print "error: diff_abs_max is zero, exit..."
 				sys.exit()
-			print "  max Final diff:", diff_max
-			print "  min Final diff:", diff_min
+			# print "  max Final diff:", diff_max
+			# print "  min Final diff:", diff_min
 			if diff_max < 0.01 and diff_min > -0.01: 
 				break
 			self.W = self.W + train_k*Bs[steps, :, :].T*diff / diff_abs_max
@@ -263,9 +264,11 @@ class robot():
 					sys.exit()
 				self.W = self.W + train_k*Bs[t, :, :].T*diff / diff_abs_max / (t+1)
 
+		print "save W to","data/W/%04d"%self.game_count
 		np.save('data/W/%04d'%self.game_count, self.W)
 
 	def train_x(self, win, train_round = 100):
+		pass
 		self.learn_self(win, train_round)
 		# self.learn_oppo(win, train_round)
 		self.learn_oppo_md1_m2(win, train_round)
@@ -274,7 +277,7 @@ class robot():
 	def train(self, F, Bs, steps, train_part, train_k = 1, train_round = 10):
 		'''Model 1 Method 1'''
 		# W = self.W
-		print __name__, "train round:", 0
+		print __name__, "train round:", 0,
 		if self.game_part != train_part:
 			for x in xrange(0, self.sz2):
 				# if Bs[steps, x, 1] == 1:
@@ -288,16 +291,12 @@ class robot():
 		if diff_abs_max==0:
 			print "error: diff_abs_max is zero, exit..."
 			sys.exit()
-		print "  max Final diff:", np.max(diff)
-		print "  min Final diff:", np.min(diff)
+		# print "  max Final diff:", np.max(diff)
+		# print "  min Final diff:", np.min(diff)
 		self.W = self.W + train_k*Bs[steps, :, :].T*diff / np.max(np.abs(diff))
 		for t in xrange(steps-1, 0-1, -1):
 			if self.game_part != train_part:
 				for x in xrange(0, self.sz2):
-					# if Bs[t, x, 1] == 1:
-					# 	Bs[t, x, 1] = 2
-					# else:
-					# 	Bs[t, x, 1] = 1
 					if Bs[steps, x, 0] !=0:
 						Bs[steps, x, 0] = 3 - Bs[steps, x, 0]
 			diff = (np.dot(self.W, Bs[t+1, :, :]) - np.dot(self.W, Bs[t, :, :]))
@@ -307,20 +306,22 @@ class robot():
 				sys.exit()
 			self.W = self.W + train_k*Bs[t, :, :].T*diff / np.max(np.abs(diff)) / (t+1)
 
-		# plt.imshow(W, origin='lower', interpolation='nearest', cmap = plt.get_cmap('copper'))
+		# plt.imshow(self.W, origin='lower', interpolation='nearest', cmap = plt.get_cmap('copper'))
 		# plt.show()
 
 		for r in xrange(1, train_round):
-			print "train round:", r
+			print "\rtrain round:", r,"       ",
 			diff = F - np.dot(self.W, Bs[steps, :, :])
 			diff_max = np.max(diff)
 			diff_min = np.min(diff)
 			diff_abs_max = np.max(np.abs(diff))
+
 			if diff_abs_max==0:
 				print "error: diff_abs_max is zero, exit..."
 				sys.exit()
-			print "  max Final diff:", diff_max
-			print "  min Final diff:", diff_min
+			# print "  max Final diff:", diff_max
+			# print "  min Final diff:", diff_min
+
 			if diff_max < 0.01 and diff_min > -0.01: 
 				break
 			self.W = self.W + train_k*Bs[steps, :, :].T*diff / diff_abs_max
@@ -333,6 +334,7 @@ class robot():
 				self.W = self.W + train_k*Bs[t, :, :].T*diff / diff_abs_max / (t+1)
 		# plt.imshow(W, origin='lower', interpolation='nearest', cmap = plt.get_cmap('copper'))
 		# plt.show()
+		print "save W to","data/W/%04d"%self.game_count
 		np.save('data/W/%04d'%self.game_count, self.W)
 
 if __name__ == "__main__":
