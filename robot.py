@@ -3,17 +3,18 @@
 # @Author: Junyuan Hong
 # @Date:   2014-12-10 12:30:10
 # @Last Modified by:   Junyuan Hong
-# @Last Modified time: 2014-12-12 22:59:34
+# @Last Modified time: 2014-12-13 12:18:14
 
 from numpy import random
 import numpy as np
 import os
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt # plot, can be remove in future
 import sys
 
-import pdb
+import pdb # for debug, insert the `pdb.set_trace()` to program
 
 class ROBOT_MODE():
+	'''this class defined the mode of ROBOT'''
 	def __init__(self, str):
 		self.str = str
 	def equal(self, mode):
@@ -119,7 +120,7 @@ class robot():
 		return (x, y)
 
 	def random_step(self, chessboard):
-		'''place chess in a reandom valid place'''
+		'''place chess in a reandom valid place, which will return a tuple(x, y)'''
 		x = 0
 		y = 0
 		invalid = True
@@ -132,10 +133,14 @@ class robot():
 		return (x, y)
 
 	def reset_params(self):
+		'''reset the params to origin status'''
 		self.steps = 0
 
 	def game_over(self, win):
-		'''tell the robot the result, win = true for winner.'''
+		'''
+			call this method when game over. Then robot will use the
+			data stored to train itself.
+		'''
 		self.game_count += 1
 		if win:
 			print "\"Yes, I'm winner!\"Robot happily said.",
@@ -154,56 +159,63 @@ class robot():
 		self.reset_params()
 
 	def find_step(self, B_cur, B_pre):
+		'''
+			find the different between B_cur and B_pre to determine
+			which step has been taken at this step.
+			return an 484x1 vector for 1 is the chess step, 0 is nothing.
+		'''
 		D = np.zeros((self.sz2, 1))
 		(y, x) = np.nonzero(B_cur - B_pre)
 		D[y[0], x[0]] = 1
 		return D
 
-	def learn_self(self, win, train_round):
-		# learn from self
+	def train_x(self, win, train_round = 100):
+		'''
+			execute the training.
+		'''
+		pass
+		self.__learn_self(win, train_round)
+		# self.learn_oppo(win, train_round)
+		self.__learn_oppo_md1_m2(win, train_round)
+
+	def __learn_self(self, win, train_round):
+		''' 
+			learn from self's steps. This may be difficult for the robot to
+			become a good player, since it lost most game at begining.
+		'''
 		print "** learn from self **"
-		self.F = self.get_estimate_P(win, np.abs(self.Bs[self.game_part - 1, self.steps, :, :]), self.Bs[self.game_part - 1, self.steps - 1, :, :])
-		# self.F = self.find_step(np.abs(self.Bs[self.game_part - 1, self.steps, :, :]), self.Bs[self.game_part - 1, self.steps - 1, :, :])
-		# active_val = 10
-		# if win:
-		# 	self.F = 50/self.steps*active_val*self.F
-		# else:
-		# 	self.F = 0.1*self.steps/50*active_val*(self.Bs[self.game_part - 1, self.steps - 1, :, :]==0)*(1 - self.F) # ??? FIXME: 
-		# self.steps -= 1
-		# if win:
-		# 	train_part = game_part
-		# else:
-		# 	if game_part = 1:
-		# 		train_part = 2
-		# 	else:
-		# 		train_part = 1
+		self.F = self.__get_estimate_P(win, np.abs(self.Bs[self.game_part - 1, self.steps, :, :]), self.Bs[self.game_part - 1, self.steps - 1, :, :])
 		train_part = self.game_part
-		self.train(self.F, self.Bs[self.game_part - 1, :,:,:], self.steps - 1, train_part, train_k = 0.05, train_round = train_round)
+		self.__train(self.F, self.Bs[self.game_part - 1, :,:,:], self.steps - 1, train_part, train_k = 0.05, train_round = train_round)
 
-	def learn_oppo(self, win, train_round):
- 		# learn from opponent
+	def __learn_oppo(self, win, train_round):
+		''' 
+			learn from opponent's steps. This may be easier for the robot to
+			become a good player, since it's opponent win most game at begining.
+			Model 1 Method 1 is used.
+		'''
  		print "** learn from opponent **"
  		win = not win
-		# self.F = self.find_step(np.abs(self.Bs[self.oppo_part - 1, self.steps, :, :]), self.Bs[self.oppo_part - 1, self.steps - 1, :, :])
-		# if win:
-		# 	self.F = 50/self.steps*active_val*self.F
-		# else:
-		# 	self.F = 0.1*50/self.steps*active_val*(self.Bs[self.game_part - 1, self.steps - 1, :, :]==0)*(1 - self.F)
-		self.F = self.get_estimate_P(win, np.abs(self.Bs[self.oppo_part - 1, self.steps, :, :]), self.Bs[self.oppo_part - 1, self.steps - 1, :, :])
+		self.F = self.__get_estimate_P(win, np.abs(self.Bs[self.oppo_part - 1, self.steps, :, :]), self.Bs[self.oppo_part - 1, self.steps - 1, :, :])
 
 		train_part = self.oppo_part
-		self.train(self.F, self.Bs[self.oppo_part - 1, :,:,:], self.steps - 1, train_part, train_k = 0.05, train_round = train_round)
+		self.__train(self.F, self.Bs[self.oppo_part - 1, :,:,:], self.steps - 1, train_part, train_k = 0.05, train_round = train_round)
 
-	def learn_oppo_md1_m2(self, win, train_round):
- 		# learn from opponent
+	def __learn_oppo_md1_m2(self, win, train_round):
+		''' 
+			learn from opponent's steps. This may be easier for the robot to
+			become a good player, since it's opponent win most game at begining.
+			This method is deffferent from learn_oppo(), since it used the Model 1
+			Method 2.
+		'''
  		print "** learn from opponent **"
  		win = not win
-		self.F = self.get_estimate_P(win, np.abs(self.Bs[self.oppo_part - 1, self.steps, :, :]), self.Bs[self.oppo_part - 1, self.steps - 1, :, :])
+		self.F = self.__get_estimate_P(win, np.abs(self.Bs[self.oppo_part - 1, self.steps, :, :]), self.Bs[self.oppo_part - 1, self.steps - 1, :, :])
 
 		train_part = self.oppo_part
-		self.train_md1_m2(win, self.F, self.Bs[self.oppo_part - 1, :,:,:], self.steps - 1, train_part, train_k = 0.05, train_round = train_round)
+		self.__train_md1_m2(win, self.F, self.Bs[self.oppo_part - 1, :,:,:], self.steps - 1, train_part, train_k = 0.05, train_round = train_round)
 
-	def get_estimate_P(self, win, B_cur, B_pre):
+	def __get_estimate_P(self, win, B_cur, B_pre):
 		'''return the estimate of P'''
 		P = self.find_step(B_cur, B_pre)
 		if win:
@@ -212,8 +224,9 @@ class robot():
 			P = 0.0008*50/self.steps*self.active_val*(B_pre==0)*(1 - P)
 		return P
 
-	def train_md1_m2(self, win, F, Bs, steps, train_part, train_k = 1, train_round = 10):
-		'''Model 1 Method 2'''
+	def __train_md1_m2(self, win, F, Bs, steps, train_part, train_k = 1, train_round = 10):
+		'''Model 1 Method 2, derivative from the train()'''
+		# use first step to do some init
 		# W = self.W
 		print __name__, "train round:", 0,
 		if self.game_part != train_part:
@@ -233,7 +246,7 @@ class robot():
 				for x in xrange(0, self.sz2):
 					if Bs[steps, x, 0] !=0:
 						Bs[steps, x, 0] = 3 - Bs[steps, x, 0]
-			eP = self.get_estimate_P(win, Bs[t+1, :, :], Bs[t, :, :])
+			eP = self.__get_estimate_P(win, Bs[t+1, :, :], Bs[t, :, :])
 			diff = (eP - np.dot(self.W, Bs[t, :, :]))
 			diff_abs_max = np.max(np.abs(diff))
 			if diff_abs_max==0:
@@ -241,6 +254,7 @@ class robot():
 				sys.exit()
 			self.W = self.W + train_k*Bs[t, :, :].T*diff / diff_abs_max / (t+1)
 
+		# ------- start train round -------
 		for r in xrange(1, train_round):
 			print "\rtrain round:", r,"       ",
 			diff = F - np.dot(self.W, Bs[steps, :, :])
@@ -256,7 +270,7 @@ class robot():
 				break
 			self.W = self.W + train_k*Bs[steps, :, :].T*diff / diff_abs_max
 			for t in xrange(steps-1, 0-1, -1):
-				eP = self.get_estimate_P(win, Bs[t+1, :, :], Bs[t, :, :])
+				eP = self.__get_estimate_P(win, Bs[t+1, :, :], Bs[t, :, :])
 				diff = (eP - np.dot(self.W, Bs[t, :, :]))
 				diff_abs_max = np.max(np.abs(diff))
 				if diff_abs_max==0:
@@ -267,15 +281,9 @@ class robot():
 		print "save W to","data/W/%04d"%self.game_count
 		np.save('data/W/%04d'%self.game_count, self.W)
 
-	def train_x(self, win, train_round = 100):
-		pass
-		self.learn_self(win, train_round)
-		# self.learn_oppo(win, train_round)
-		self.learn_oppo_md1_m2(win, train_round)
-
-
-	def train(self, F, Bs, steps, train_part, train_k = 1, train_round = 10):
+	def __train(self, F, Bs, steps, train_part, train_k = 1, train_round = 10):
 		'''Model 1 Method 1'''
+		# use first step to do some init
 		# W = self.W
 		print __name__, "train round:", 0,
 		if self.game_part != train_part:
@@ -309,6 +317,7 @@ class robot():
 		# plt.imshow(self.W, origin='lower', interpolation='nearest', cmap = plt.get_cmap('copper'))
 		# plt.show()
 
+		# ------- start train round -------
 		for r in xrange(1, train_round):
 			print "\rtrain round:", r,"       ",
 			diff = F - np.dot(self.W, Bs[steps, :, :])
